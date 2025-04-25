@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FURIA ChatBot</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        .message {
+            max-width: 80%;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .user-message {
+            background-color: #4F46E5;
+            color: white;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #E5E7EB;
+            color: black;
+            margin-right: auto;
+        }
+        .error-message {
+            background-color: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FCA5A5;
+            margin: 10px auto;
+            max-width: 80%;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        /* Estilos para o Markdown */
+        .markdown-content h1 {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 1em 0;
+        }
+        .markdown-content h2 {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 1em 0;
+        }
+        .markdown-content p {
+            margin: 0.5em 0;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin: 0.5em 0;
+            padding-left: 1em;
+        }
+        .markdown-content li {
+            margin: 0.25em 0;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #4F46E5;
+            padding-left: 1em;
+            margin: 1em 0;
+            color: #666;
+        }
+        .markdown-content code {
+            background-color: #f3f4f6;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .markdown-content a {
+            color: #4F46E5;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <img src="https://furia.gg/wp-content/uploads/2021/09/furia-logo.png" alt="FURIA Logo" class="mx-auto h-16 mb-4">
+            <h1 class="text-3xl font-bold text-gray-800">FURIA ChatBot</h1>
+            <p class="text-gray-600">Seu assistente virtual para informações sobre a FURIA</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-lg p-4 chat-container overflow-y-auto" id="chatContainer">
+            <div class="message bot-message">
+                <div class="markdown-content">
+                    Olá! Sou o assistente virtual da FURIA. Como posso ajudar você hoje?
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 flex">
+            <input type="text" id="userInput" 
+                   class="flex-1 p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                   placeholder="Digite sua mensagem...">
+            <button onclick="sendMessage()" 
+                    class="bg-purple-600 text-white px-4 py-2 rounded-r-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                Enviar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+
+        // Configura o marked para renderizar o Markdown
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        function addMessage(message, isUser, isError = false) {
+            const messageDiv = document.createElement('div');
+            if (isError) {
+                messageDiv.className = 'error-message';
+                messageDiv.textContent = message;
+            } else {
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                const contentDiv = document.createElement('div');
+                contentDiv.className = isUser ? '' : 'markdown-content';
+                if (isUser) {
+                    contentDiv.textContent = message;
+                } else {
+                    contentDiv.innerHTML = marked.parse(message);
+                }
+                messageDiv.appendChild(contentDiv);
+            }
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            userInput.value = '';
+            userInput.disabled = true;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message }),
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    addMessage(data.response, false);
+                } else {
+                    addMessage(`Erro: ${data.message}`, false, true);
+                }
+            } catch (error) {
+                addMessage('Erro ao se comunicar com o servidor. Por favor, tente novamente.', false, true);
+                console.error('Erro:', error);
+            } finally {
+                userInput.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html> 
