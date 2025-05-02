@@ -1,78 +1,89 @@
-# FURIA ChatBot
+# Chatbot FURIA CS2
 
-Um chatbot desenvolvido para os fãs da FURIA, utilizando Python, Flask e a API do Google Gemini. O bot integra dados da Liquipedia para fornecer informações atualizadas sobre o time.
+Um chatbot especializado em fornecer informações sobre o time FURIA de CS2, desenvolvido com Flask e integrado à API do Google Gemini.
 
-## Funcionalidades
+## 🎯 Funcionalidades
 
-- Interface web responsiva e moderna
-- Integração com a API do Google Gemini para processamento de linguagem natural
-- Integração com a Liquipedia para dados atualizados sobre a FURIA
-- Respostas sobre jogadores, resultados, próximos jogos e história da FURIA
-- Sistema de cache para otimizar requisições à Liquipedia
-- Design alinhado com a identidade visual da FURIA
+- Informações sobre o elenco atual do time de CS2
+  - Lista de jogadores ativos e inativos
+  - Posições dos jogadores
+  - Status de atividade
+- Próximos jogos agendados
+- Resultados recentes
+- Histórico do time
+- Conquistas importantes
+- Informações sobre produtos FURIA
 
-## Requisitos
+## 🛠️ Tecnologias Utilizadas
 
-- Python 3.8 ou superior
+- Python 3.x
+- Flask (Framework Web)
+- Google Gemini API (IA Generativa)
+- BeautifulSoup4 (Web Scraping)
+- Liquipedia API (Dados do time)
+
+## 📋 Pré-requisitos
+
+- Python 3.x instalado
 - Chave de API do Google Gemini
+- Conexão com a internet
 
-## Instalação
+## 🔧 Instalação
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/StarDropUwU/ProjetoChatbotFURIA/
+git clone https://github.com/StarDropUwU/ProjetoChatbotFURIA.git
 cd ProjetoChatbotFURIA
 ```
 
-2. Crie um ambiente virtual e ative-o:
-```bash
-python -m venv venv
-source venv/bin/activate  # No Windows: venv\Scripts\activate
-```
-
-3. Instale as dependências:
+2. Instale as dependências:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Configure a chave da API:
+3. Configure as variáveis de ambiente:
    - Crie um arquivo `.env` na raiz do projeto
    - Adicione sua chave da API do Gemini:
-   ```
-   GEMINI_API_KEY=sua_chave_aqui
-   ```
+```
+GEMINI_API_KEY=sua_chave_aqui
+```
 
-## Uso
+## 🚀 Executando o Projeto
 
-1. Inicie o servidor:
+1. Inicie o servidor Flask:
 ```bash
 python app.py
 ```
 
-2. Acesse o chatbot em seu navegador:
-```
-http://localhost:5000
-```
+2. Acesse a interface web:
+   - Página inicial: `http://localhost:5000`
+   - Interface do chat: `http://localhost:5000/chat`
 
-## Estrutura do Projeto
+## 📝 Estrutura do Projeto
 
 ```
-furia-chatbot/
-├── app.py                    # Aplicação principal Flask
-├── liquipedia_client.py      # Cliente para integração com a Liquipedia
-├── test_liquipedia_client.py # Testes do cliente Liquipedia
-├── requirements.txt          # Dependências do projeto
-├── .env                      # Configurações (não versionado)
-├── cache/                    # Diretório para cache de dados
-└── templates/
-    └── index.html           # Interface web
+ProjetoChatbotFURIA/
+├── app.py                 # Aplicação principal Flask
+├── liquipedia_client.py   # Cliente para a API da Liquipedia
+├── requirements.txt       # Dependências do projeto
+├── .env                  # Variáveis de ambiente
+└── templates/            # Templates HTML
+    ├── index.html        # Interface do chat
+    └── landing.html      # Página inicial
 ```
 
-## Dependências Principais
+## 🔄 Funcionamento
 
-- Flask 3.0.2 - Framework web
-- Flask-CORS 4.0.0 - Suporte a CORS
-- Google Generative AI 0.3.2 - API do Gemini
-- Python-dotenv 1.0.1 - Gerenciamento de variáveis de ambiente
-- Requests 2.31.0 - Requisições HTTP
-- BeautifulSoup4 4.12.3 - Web scraping
+1. O chatbot utiliza a API do Google Gemini para processar as mensagens
+2. Dados do time são obtidos em tempo real da Liquipedia
+3. Sistema de cache implementado para otimizar requisições
+4. Rate limiting para evitar sobrecarga da API
+5. Histórico de conversas mantido por sessão
+
+## ⚙️ Configurações
+
+- Cache de respostas: 5 minutos
+- Limite de requisições: 60 por minuto
+- Histórico de conversas: 5 interações por sessão
+- Intervalo mínimo entre requisições à Liquipedia: 2 segundos
+
