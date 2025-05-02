@@ -63,6 +63,8 @@ Sempre que usar informações dos dados atualizados:
 - Use `backticks` para nomes de times
 - Mantenha respostas curtas e informativas
 - Inclua links relevantes quando possível: [Saiba mais](https://liquipedia.net/counterstrike/FURIA)
+
+Quando o usuário solicitar informações sobre os produtos da FURIA, informe que o catálogo de produtos da FURIA pode ser visualizado no link: [Produtos FURIA](https://furia.gg/)
 """
 
 # Armazena o histórico de conversas por sessão
@@ -80,6 +82,10 @@ def format_conversation_history(history):
 
 @app.route('/')
 def home():
+    return render_template('landing.html')
+
+@app.route('/chat')
+def chat_interface():
     return render_template('index.html')
 
 @app.route('/api/chat', methods=['POST'])
@@ -131,10 +137,18 @@ def chat():
             'response': response.text
         })
     except Exception as e:
-        logger.error(f"Erro ao processar mensagem: {str(e)}", exc_info=True)
+        error_message = str(e)
+        logger.error(f"Erro ao processar mensagem: {error_message}", exc_info=True)
+        
+        # Verifica se é um erro de limite de requisições
+        if "429" in error_message and "quota" in error_message.lower():
+            user_friendly_message = "Desculpe, atingimos o limite de requisições do serviço. Por favor, aguarde alguns minutos e tente novamente."
+        else:
+            user_friendly_message = "Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente mais tarde."
+        
         return jsonify({
             'status': 'error',
-            'message': f'Erro ao processar mensagem: {str(e)}'
+            'message': user_friendly_message
         }), 500
     
     # Adicione métricas de monitoramento
