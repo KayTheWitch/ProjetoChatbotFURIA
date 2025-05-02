@@ -3,100 +3,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FURIA ChatBot</title>
+    <title>FURIA ChatBot - Assitente Virtual</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
+        :root {
+            --furia-black: #0C0C0C;
+            --furia-red: #E31937;
+            --furia-yellow: #FFD700;
+            --furia-gray: #1A1A1A;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+        }
+        
         .chat-container {
             height: calc(100vh - 200px);
+            scrollbar-width: thin;
+            scrollbar-color: var(--furia-red) #f1f1f1;
+            @media (max-width: 640px) {
+                height: calc(100vh - 180px);
+            }
         }
-        .message {
-            max-width: 80%;
-            margin: 10px;
-            padding: 15px;
+        
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
             border-radius: 10px;
         }
+        
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: var(--furia-red);
+            border-radius: 10px;
+        }
+        
+        .message {
+            max-width: 85%;
+            margin: 12px;
+            padding: 16px;
+            border-radius: 16px;
+            animation: fadeIn 0.3s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            @media (max-width: 640px) {
+                max-width: 90%;
+                margin: 8px;
+                padding: 12px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .user-message {
-            background-color: #4F46E5;
+            background: linear-gradient(135deg, var(--furia-gray) 0%, var(--furia-black) 100%);
             color: white;
             margin-left: auto;
+            border-bottom-right-radius: 4px;
         }
+        
         .bot-message {
-            background-color: #E5E7EB;
-            color: black;
+            background-color: white;
+            color: var(--furia-black);
             margin-right: auto;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e5e5e5;
         }
+        
+        .bot-message::before {
+            content: "";
+            position: absolute;
+            left: -8px;
+            top: 16px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid white;
+        }
+        
         .error-message {
-            background-color: #FEE2E2;
-            color: #DC2626;
-            border: 1px solid #FCA5A5;
-            margin: 10px auto;
-            max-width: 80%;
-            padding: 10px;
-            border-radius: 10px;
+            background-color: #FFF0F0;
+            color: #D32F2F;
+            border: 1px solid #FFCDD2;
+            margin: 12px auto;
+            max-width: 85%;
+            padding: 12px;
+            border-radius: 12px;
             text-align: center;
+            @media (max-width: 640px) {
+                max-width: 90%;
+                margin: 8px auto;
+            }
         }
+        
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            padding: 16px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid #e5e5e5;
+            @media (max-width: 640px) {
+                padding: 12px;
+            }
+        }
+        
+        .input-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: white;
+            @media (max-width: 640px) {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--furia-red);
+            box-shadow: 0 0 0 3px rgba(227, 25, 55, 0.1);
+        }
+        
+        .send-button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--furia-red) 0%, #C8102E 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            @media (max-width: 640px) {
+                padding: 12px 20px;
+            }
+        }
+        
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(227, 25, 55, 0.3);
+        }
+        
+        .send-button:active {
+            transform: translateY(0);
+        }
+        
+        .send-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
         /* Estilos para o Markdown */
         .markdown-content h1 {
             font-size: 1.5em;
-            font-weight: bold;
+            font-weight: 700;
             margin: 1em 0;
+            color: var(--furia-black);
         }
+        
         .markdown-content h2 {
             font-size: 1.3em;
-            font-weight: bold;
+            font-weight: 600;
             margin: 1em 0;
+            color: var(--furia-gray);
         }
+        
         .markdown-content p {
-            margin: 0.5em 0;
+            margin: 0.75em 0;
+            line-height: 1.6;
+            color: #333;
         }
+        
         .markdown-content ul, .markdown-content ol {
-            margin: 0.5em 0;
-            padding-left: 1em;
+            margin: 0.75em 0;
+            padding-left: 1.5em;
         }
+        
         .markdown-content li {
-            margin: 0.25em 0;
+            margin: 0.5em 0;
+            line-height: 1.6;
+            color: #333;
         }
+        
         .markdown-content blockquote {
-            border-left: 4px solid #4F46E5;
-            padding-left: 1em;
+            border-left: 4px solid var(--furia-red);
+            padding: 0.75em 1em;
             margin: 1em 0;
-            color: #666;
+            background-color: #FFF5F5;
+            border-radius: 4px;
+            color: #333;
         }
+        
         .markdown-content code {
-            background-color: #f3f4f6;
+            background-color: #F5F5F5;
             padding: 0.2em 0.4em;
-            border-radius: 3px;
-            font-family: monospace;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+            color: var(--furia-black);
         }
+        
+        .markdown-content pre {
+            background-color: #F5F5F5;
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        
         .markdown-content a {
-            color: #4F46E5;
-            text-decoration: underline;
+            color: var(--furia-red);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid var(--furia-red);
+            transition: all 0.2s;
+        }
+        
+        .markdown-content a:hover {
+            color: #C8102E;
+            border-bottom-color: #C8102E;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--furia-black) 0%, var(--furia-gray) 100%);
+            color: white;
+            padding: 24px 0;
+            margin-bottom: 24px;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--furia-red) 0%, var(--furia-yellow) 100%);
+        }
+        
+        .logo {
+            height: 60px;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s;
+            @media (max-width: 640px) {
+                height: 48px;
+            }
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, white 0%, #EEEEEE 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            @media (max-width: 640px) {
+                font-size: 1.75rem;
+            }
+        }
+        
+        .subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            color: #DDD;
+            @media (max-width: 640px) {
+                font-size: 1rem;
+            }
+        }
+        
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background-color: white;
+            border-radius: 16px;
+            width: fit-content;
+            margin: 8px;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background-color: var(--furia-red);
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 12px;
+            @media (max-width: 640px) {
+                margin: 12px 8px;
+            }
+        }
+        
+        .suggestion-chip {
+            padding: 8px 16px;
+            background-color: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--furia-gray);
+            @media (max-width: 640px) {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+        
+        .suggestion-chip:hover {
+            background-color: var(--furia-red);
+            color: white;
+            border-color: var(--furia-red);
+            transform: translateY(-2px);
+        }
+        
+        .last-update {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
         }
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-8">
-            <img src="https://furia.gg/wp-content/uploads/2021/09/furia-logo.png" alt="FURIA Logo" class="mx-auto h-16 mb-4">
-            <h1 class="text-3xl font-bold text-gray-800">FURIA ChatBot</h1>
-            <p class="text-gray-600">Seu assistente virtual para informações sobre a FURIA</p>
-        </header>
+    <header class="header animate__animated animate__fadeIn">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="title">FURIA ChatBot</h1>
+            <p class="subtitle">Seu assistente virtual para tudo sobre a FURIA</p>
+        </div>
+    </header>
 
-        <div class="bg-white rounded-lg shadow-lg p-4 chat-container overflow-y-auto" id="chatContainer">
-            <div class="message bot-message">
+    <main class="container mx-auto px-4 pb-28">
+        <div class="bg-white rounded-2xl shadow-md p-4 chat-container overflow-y-auto" id="chatContainer">
+            <div class="message bot-message animate__animated animate__fadeInUp">
                 <div class="markdown-content">
-                    Olá! Sou o assistente virtual da FURIA. Como posso ajudar você hoje?
+                    Olá, Furioso! 🔥 Sou o assistente virtual da FURIA. Posso te ajudar com:
+                    - Últimos resultados e partidas
+                    - Próximos jogos e campeonatos
+                    - Notícias sobre o time
+                    - Informações sobre jogadores
+                    - E muito mais!
+                    
+                    <div class="suggestions">
+                        <div class="suggestion-chip" onclick="insertSuggestion('Quando é o próximo jogo da FURIA?')">Próximo jogo</div>
+                        <div class="suggestion-chip" onclick="insertSuggestion('Quem são os jogadores da FURIA?')">Elenco atual</div>
+                        <div class="suggestion-chip" onclick="insertSuggestion('Quais campeonatos a FURIA vai jogar?')">Campeonatos</div>
+                        <div class="suggestion-chip" onclick="insertSuggestion('Onde comprar produtos da FURIA?')">Produtos FURIA</div>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <div class="last-update animate__animated animate__fadeIn">
+            Atualizado em: <span id="currentDate"></span>
+        </div>
+    </main>
 
-        <div class="mt-4 flex">
+    <div class="input-container animate__animated animate__fadeInUp">
+        <div class="input-wrapper">
             <input type="text" id="userInput" 
-                   class="flex-1 p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                   placeholder="Digite sua mensagem...">
-            <button onclick="sendMessage()" 
-                    class="bg-purple-600 text-white px-4 py-2 rounded-r-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                   class="chat-input"
+                   placeholder="Pergunte sobre a FURIA..."
+                   autocomplete="off">
+            <button onclick="sendMessage()" id="sendButton"
+                    class="send-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
                 Enviar
             </button>
         </div>
@@ -105,20 +438,52 @@
     <script>
         const chatContainer = document.getElementById('chatContainer');
         const userInput = document.getElementById('userInput');
-
+        const sendButton = document.getElementById('sendButton');
+        const currentDateElement = document.getElementById('currentDate');
+        
+        // Atualiza a data atual
+        const now = new Date();
+        const options = { day: '2-digit', month: 'long', year: 'numeric' };
+        currentDateElement.textContent = now.toLocaleDateString('pt-BR', options);
+        
+        // Gera um ID único para a sessão
+        const sessionId = 'furia_' + Math.random().toString(36).substr(2, 9);
+        
         // Configura o marked para renderizar o Markdown
         marked.setOptions({
             breaks: true,
             gfm: true
         });
-
+        
+        // Mostra indicador de digitação
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Remove indicador de digitação
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
         function addMessage(message, isUser, isError = false) {
             const messageDiv = document.createElement('div');
             if (isError) {
-                messageDiv.className = 'error-message';
+                messageDiv.className = 'error-message animate__animated animate__fadeIn';
                 messageDiv.textContent = message;
             } else {
-                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'} animate__animated animate__fadeInUp`;
                 const contentDiv = document.createElement('div');
                 contentDiv.className = isUser ? '' : 'markdown-content';
                 if (isUser) {
@@ -131,25 +496,43 @@
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
-
+        
+        function insertSuggestion(text) {
+            userInput.value = text;
+            userInput.focus();
+        }
+        
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
-
+            
             addMessage(message, true);
             userInput.value = '';
             userInput.disabled = true;
-
+            sendButton.disabled = true;
+            
+            // Mostra indicador de digitação
+            showTypingIndicator();
+            
             try {
+                // Simula um delay para demonstração
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Aqui você substituiria pela chamada real à sua API
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message }),
+                    body: JSON.stringify({ 
+                        message,
+                        session_id: sessionId
+                    }),
                 });
-
+                
                 const data = await response.json();
+                
+                hideTypingIndicator();
                 
                 if (data.status === 'success') {
                     addMessage(data.response, false);
@@ -157,19 +540,26 @@
                     addMessage(`Erro: ${data.message}`, false, true);
                 }
             } catch (error) {
+                hideTypingIndicator();
                 addMessage('Erro ao se comunicar com o servidor. Por favor, tente novamente.', false, true);
                 console.error('Erro:', error);
             } finally {
                 userInput.disabled = false;
+                sendButton.disabled = false;
                 userInput.focus();
             }
         }
-
+        
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
+        
+        // Foco automático no input quando a página carrega
+        window.addEventListener('DOMContentLoaded', () => {
+            userInput.focus();
+        });
     </script>
 </body>
-</html> 
+</html>
