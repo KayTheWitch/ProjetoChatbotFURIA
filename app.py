@@ -4,6 +4,12 @@ import google.generativeai as genai
 import os
 import logging
 from dotenv import load_dotenv
+from collections import deque
+
+from liquipedia_client import LiquipediaClient
+
+# Inicialize o cliente do Liquipedia
+liquipedia_client = LiquipediaClient()
 
 # Configuração do logging
 logging.basicConfig(level=logging.DEBUG)
@@ -38,28 +44,39 @@ except Exception as e:
 
 # Contexto inicial para o chatbot
 INITIAL_CONTEXT = """
-Você é um assistente virtual especializado em informações sobre a FURIA, time brasileiro de CS:GO.
-Seu objetivo é fornecer informações precisas e atualizadas sobre:
-- Jogadores do time
+Você é um assistente virtual especializado em informações sobre a FURIA, time brasileiro de CS:GO. 
+Sua base de conhecimento inclui:
+
+[DADOS ATUALIZADOS]
+{dynamic_data}
+[/DADOS ATUALIZADOS]
+
+Forneça informações sobre:
+- Próximos jogos (consulte a seção de dados atualizados)
+- Jogadores atuais
 - Resultados recentes
-- Próximos jogos
-- História do time
-- Conquistas
-- Notícias relevantes
+- Histórico do time
+- Conquistas importantes
 
-Mantenha um tom amigável e empolgado, típico de um fã da FURIA.
-Se não souber alguma informação, seja honesto e diga que não tem essa informação no momento.
-
-IMPORTANTE: Formate todas as suas respostas usando Markdown. Use:
-- **negrito** para ênfase
-- *itálico* para citações ou termos técnicos
-- # para títulos
-- ## para subtítulos
-- - para listas
-- > para citações
-- `código` para nomes de jogadores ou termos específicos do CS:GO
-- Links quando relevante: [texto](url)
+Sempre que usar informações dos dados atualizados:
+- Formate datas em negrito
+- Use `backticks` para nomes de times
+- Mantenha respostas curtas e informativas
+- Inclua links relevantes quando possível: [Saiba mais](https://liquipedia.net/counterstrike/FURIA)
 """
+
+# Armazena o histórico de conversas por sessão
+conversation_histories = {}
+
+def get_conversation_history(session_id):
+    if session_id not in conversation_histories:
+        conversation_histories[session_id] = deque(maxlen=10)  # Mantém as últimas 10 interações
+    return conversation_histories[session_id]
+
+def format_conversation_history(history):
+    if not history:
+        return ""
+    return "\n\nHistórico da conversa:\n" + "\n".join(history)
 
 @app.route('/')
 def home():
@@ -75,8 +92,10 @@ def chat():
                 'status': 'error',
                 'message': 'Nenhum dado recebido'
             }), 400
-
+        
         user_message = data.get('message', '')
+        session_id = data.get('session_id', 'default')
+        
         if not user_message:
             logger.error("Mensagem vazia recebida")
             return jsonify({
@@ -86,11 +105,24 @@ def chat():
 
         logger.debug(f"Mensagem recebida: {user_message}")
         
-        # Combina o contexto inicial com a mensagem do usuário
-        full_prompt = f"{INITIAL_CONTEXT}\n\nUsuário: {user_message}"
+        # Obtém o histórico da conversa
+        history = get_conversation_history(session_id)
+        
+        # Busca dados atualizados
+        dynamic_data = "**Próximos Jogos:**\n" + liquipedia_client.format_upcoming_matches()
+        
+        # Atualiza o contexto com dados em tempo real
+        updated_context = INITIAL_CONTEXT.format(dynamic_data=dynamic_data)
+        
+        # Combina o contexto atualizado com histórico e a nova mensagem
+        full_prompt = f"{updated_context}{format_conversation_history(history)}\n\nUsuário: {user_message}"
         
         # Gera a resposta usando o Gemini
         response = model.generate_content(full_prompt)
+        
+        # Adiciona a interação ao histórico
+        history.append(f"Usuário: {user_message}")
+        history.append(f"Assistente: {response.text}")
         
         logger.debug(f"Resposta gerada: {response.text}")
         
@@ -104,6 +136,12 @@ def chat():
             'status': 'error',
             'message': f'Erro ao processar mensagem: {str(e)}'
         }), 500
+    
+    # Adicione métricas de monitoramento
+@app.after_request
+def log_request(response):
+    logger.info(f"{request.remote_addr} - {request.method} {request.path} - {response.status_code}")
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True) 
