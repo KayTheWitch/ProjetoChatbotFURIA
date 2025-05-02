@@ -17,10 +17,11 @@ Um chatbot especializado em fornecer informações sobre o time FURIA de CS2, de
 ## 🛠️ Tecnologias Utilizadas
 
 - Python 3.x
-- Flask (Framework Web)
+- Flask 3.0.2
 - Google Gemini API (IA Generativa)
-- BeautifulSoup4 (Web Scraping)
+- BeautifulSoup4 4.12.3
 - Liquipedia API (Dados do time)
+- Gunicorn 21.2.0 (Servidor WSGI)
 
 ## 📋 Pré-requisitos
 
@@ -50,6 +51,8 @@ GEMINI_API_KEY=sua_chave_aqui
 
 ## 🚀 Executando o Projeto
 
+### Desenvolvimento Local
+
 1. Inicie o servidor Flask:
 ```bash
 python app.py
@@ -59,17 +62,24 @@ python app.py
    - Página inicial: `http://localhost:5000`
    - Interface do chat: `http://localhost:5000/chat`
 
+### Produção
+
+O projeto inclui um Procfile para deploy em plataformas como Heroku. O servidor Gunicorn será iniciado automaticamente.
+
 ## 📝 Estrutura do Projeto
 
 ```
 ProjetoChatbotFURIA/
-├── app.py                 # Aplicação principal Flask
-├── liquipedia_client.py   # Cliente para a API da Liquipedia
-├── requirements.txt       # Dependências do projeto
-├── .env                  # Variáveis de ambiente
-└── templates/            # Templates HTML
-    ├── index.html        # Interface do chat
-    └── landing.html      # Página inicial
+├── app.py                    # Aplicação principal Flask
+├── liquipedia_client.py      # Cliente para a API da Liquipedia
+├── test_liquipedia_client.py # Testes do cliente Liquipedia
+├── requirements.txt          # Dependências do projeto
+├── Procfile                 # Configuração para deploy
+├── .env                     # Variáveis de ambiente
+├── cache/                   # Diretório de cache
+└── templates/               # Templates HTML
+    ├── index.html           # Interface do chat
+    └── landing.html         # Página inicial
 ```
 
 ## 🔄 Funcionamento
@@ -86,4 +96,6 @@ ProjetoChatbotFURIA/
 - Limite de requisições: 60 por minuto
 - Histórico de conversas: 5 interações por sessão
 - Intervalo mínimo entre requisições à Liquipedia: 2 segundos
+- Servidor WSGI: Gunicorn
+- CORS habilitado para requisições cross-origin
 
